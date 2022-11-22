@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  opensearch-cluster-node1:
+    image: opensearchproject/opensearch:2.2.1
+    container_name: opensearch-cluster-node1
+    environment:
+      - logger.level=error
+      - node.name=opensearch-cluster-node1
+      - cluster.name=opensearch-cluster
+      - discovery.seed_hosts=opensearch-cluster-node1
+      - cluster.initial_master_nodes=opensearch-cluster-node1
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - network.host=0.0.0.0
+      - "DISABLE_INSTALL_DEMO_CONFIG=true" # disables execution of install_demo_configuration.sh bundled with security plugin, which installs demo certificates and security configurations to OpenSearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      -  opensearch-cluster-node1-data1:/usr/share/opensearch/data
+      - ./build/certs/root-ca.pem:/usr/share/opensearch/config/certs/root-ca.pem
+      - ./build/certs/node1.pem:/usr/share/opensearch/config/certs/node1.pem
+      - ./build/certs/node1-key.pem:/usr/share/opensearch/config/certs/node1-key.pem
+      - ./config/opensearch-node1.yml:/usr/share/opensearch/config/opensearch.yml
+      - ./config/opensearch-security-config.yml:/usr/share/opensearch/config/opensearch-security/config.yml
+      - ./config/okta-metadata.xml:/usr/share/opensearch/config/opensearch-security/okta-metadata.xml
+      - ./config/internal_users.yml:/usr/share/opensearch/config/opensearch-security/internal_users.yml
+      - ./config/roles_mapping.yml:/usr/share/opensearch/config/opensearch-security/roles_mapping.yml
+      - ./config/tenants.yml:/usr/share/opensearch/config/opensearch-security/tenants.yml
+      - ./config/roles.yml:/usr/share/opensearch/config/opensearch-security/roles.yml
+      - ./config/action_groups.yml:/usr/share/opensearch/config/opensearch-security/action_groups.yml
+    ports:
+      - "9200:9200"
+    networks:
+      - opensearch-cluster-net
+
+  opensearch-cluster-dashboard:
+    image: opensearchproject/opensearch-dashboards:2.2.1
+    container_name: opensearch-cluster-dashboard
+    ports:
+      - "5601:5601"
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["https://opensearch-cluster-node1:9200"]'
+    volumes:
+      - ./build/certs/root-ca.pem:/usr/share/opensearch-dashboards/config/certs/root-ca.pem
+      - ./build/certs/client.pem:/usr/share/opensearch-dashboards/config/certs/client.pem
+      - ./build/certs/client-key.pem:/usr/share/opensearch-dashboards/config/certs/client-key.pem
+      - ./config/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+    networks:
+      - opensearch-cluster-net
+
+volumes:
+  opensearch-cluster-node1-data1:
+
+networks:
+  opensearch-cluster-net:

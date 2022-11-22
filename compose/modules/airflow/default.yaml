@@ -1,0 +1,74 @@
+version: '3.9'
+services:
+  airflow_postgresql:
+    image: docker.io/bitnami/postgresql:10
+    volumes:
+      - airflow_postgresql_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_DATABASE=airflow
+      - POSTGRESQL_USERNAME=airflow_user
+      - POSTGRESQL_PASSWORD=airflow_pw
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - apps-of-app-net
+  airflow_redis:
+    image: docker.io/bitnami/redis:7.0
+    volumes:
+      - airflow_redis_data:/bitnami
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - apps-of-app-net
+  airflow_scheduler:
+    image: docker.io/bitnami/airflow-scheduler:2.4.2
+    environment:
+      - REDIS_HOST=airflow_redis
+      - REDIS_PORT_NUMBER=6379
+      - AIRFLOW_DATABASE_HOST=airflow_postgresql
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - AIRFLOW_DATABASE_NAME=airflow
+      - AIRFLOW_DATABASE_USERNAME=airflow_user
+      - AIRFLOW_DATABASE_PASSWORD=airflow_pw
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_LOAD_EXAMPLES=no
+      - AIRFLOW_WEBSERVER_HOST=airflow
+    networks:
+      - apps-of-app-net
+  airflow_worker:
+    image: docker.io/bitnami/airflow-worker:2.4.2
+    environment:
+      - REDIS_HOST=airflow_redis
+      - REDIS_PORT_NUMBER=6379
+      - AIRFLOW_DATABASE_HOST=airflow_postgresql
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - AIRFLOW_DATABASE_NAME=airflow
+      - AIRFLOW_DATABASE_USERNAME=airflow_user
+      - AIRFLOW_DATABASE_PASSWORD=airflow_pw
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_WEBSERVER_HOST=airflow
+    networks:
+      - apps-of-app-net
+  airflow:
+    image: docker.io/bitnami/airflow:2.4.2
+    environment:
+      - REDIS_HOST=airflow_redis
+      - REDIS_PORT_NUMBER=6379
+      - AIRFLOW_DATABASE_HOST=airflow_postgresql
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+      - AIRFLOW_DATABASE_NAME=airflow
+      - AIRFLOW_DATABASE_USERNAME=airflow_user
+      - AIRFLOW_DATABASE_PASSWORD=airflow_pw
+      - AIRFLOW_LOAD_EXAMPLES=no
+      - AIRFLOW_USERNAME=admin
+      - AIRFLOW_PASSWORD=admin
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+    ports:
+      - '8080:8080'
+    networks:
+      - apps-of-app-net
+volumes:
+  airflow_postgresql_data:
+  airflow_redis_data:
+networks:
+  apps-of-app-net:
+    name: Tiltfiles-of-app-net
