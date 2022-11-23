@@ -31,6 +31,7 @@ func Execute(workingDir string) {
 }
 
 func init() {
+	initConfig()
 	rootCmd.SilenceErrors = true
 	rootCmd.SetUsageTemplate(colorYellow + `Usage:` + colorNormal + `{{if .Runnable}}
 ` + colorGreen + `{{.UseLine}}` + colorNormal + `{{end}}{{if .HasAvailableSubCommands}}
