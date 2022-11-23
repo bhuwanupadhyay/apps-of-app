@@ -7,22 +7,12 @@ import (
 )
 
 func main() {
-
-	fmt.Println("------------------ <BEGIN> ----------------------------")
 	workingDir, err := extractTemporarily()
-	fmt.Printf("Working directory: %s\n", workingDir)
-	//err = listDir(workingDir)
-	fmt.Println("------------------ <EXECUTE> --------------------------")
-	fmt.Println("")
-
 	if err != nil {
 		panic(err)
 	}
-
 	cmd.Execute(workingDir)
-
 	fmt.Println("")
-	fmt.Println("----------------- <FINISHED> -------------------------")
 	cleanWorkingDir(workingDir)
 }
 

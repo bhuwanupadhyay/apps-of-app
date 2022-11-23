@@ -17,7 +17,6 @@ var tiltCmd = &cobra.Command{
 
 var tiltUpCmd = buildTiltCmd("up")
 var tiltDownCmd = buildTiltCmd("down")
-var tiltDir = filepath.Join(baseDir, "compose", "Tiltfiles")
 var tiltListCmd = &cobra.Command{
 	Use:   "list <app>",
 	Short: "List tilt available apps",
@@ -25,6 +24,7 @@ var tiltListCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		tiltDir := filepath.Join(baseDir, "compose", "Tiltfiles")
 		_ = filepath.Walk(tiltDir, func(path string, info os.FileInfo, err error) error {
 			if !info.IsDir() {
 				fmt.Println("Available Applications")
@@ -46,6 +46,7 @@ func buildTiltCmd(command string) *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
+			tiltDir := filepath.Join(baseDir, "compose", "Tiltfiles")
 			tiltFile := filepath.Join(tiltDir, fmt.Sprintf("%s.Tiltfile", args[0]))
 			ExecuteCommand(CommandRequest{"tilt", []string{command, "--file", tiltFile}})
 		},
