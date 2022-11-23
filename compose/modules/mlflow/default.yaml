@@ -28,4 +28,4 @@ volumes:
   mlflow_postgresql_data:
 networks:
   apps-of-app-net:
-    name: Tiltfiles-of-app-net
+    name: apps-of-app-net

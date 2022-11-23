@@ -38,4 +38,4 @@ volumes:
   opensearch_node1_data:
 networks:
   apps-of-app-net:
-    name: Tiltfiles-of-app-net
+    name: apps-of-app-net
