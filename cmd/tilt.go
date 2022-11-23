@@ -46,7 +46,7 @@ func buildTiltCmd(command string) *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			tiltFile := filepath.Join(tiltDir, fmt.Sprintf("%s.Tiltfile", args[0]))
+			tiltFile := filepath.Join(baseDir, tiltDir, fmt.Sprintf("%s.Tiltfile", args[0]))
 			ExecuteCommand(CommandRequest{"tilt", []string{command, "--file", tiltFile}})
 		},
 	}
