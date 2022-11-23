@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -87,14 +88,13 @@ func extractTemporarily() (string, error) {
 	return tempUnpackPath, err
 }
 
-//
-//func listDir(workingDir string) error {
-//	err := filepath.Walk(workingDir, func(path string, info os.FileInfo, err error) error {
-//		if err != nil {
-//			return err
-//		}
-//		fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
-//		return nil
-//	})
-//	return err
-//}
+func listDir(workingDir string) error {
+	err := filepath.Walk(workingDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
+		return nil
+	})
+	return err
+}
