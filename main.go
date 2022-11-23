@@ -7,12 +7,13 @@ import (
 )
 
 func main() {
+	fmt.Println("-----------------------------------------------")
 	workingDir, err := extractTemporarily()
 	if err != nil {
 		panic(err)
 	}
 	cmd.Execute(workingDir)
-	fmt.Println("")
+	fmt.Println("-----------------------------------------------")
 	cleanWorkingDir(workingDir)
 }
 
