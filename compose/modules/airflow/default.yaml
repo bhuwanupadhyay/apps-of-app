@@ -1,4 +1,20 @@
 version: '3.9'
+x-airflow-common: &airflow-common
+  image: sd.k8s/glide-ai:latest
+  build:
+    context: ../../glide-ai/
+    dockerfile: Dockerfile
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow_user:airflow_pw@airflow_postgresql:5432/airflow
+    - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+    - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+  depends_on:
+    - airflow_postgresql
+  networks:
+    - apps-of-app-net
 services:
   airflow_postgresql:
     image: docker.io/bitnami/postgresql:10
@@ -11,64 +27,34 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
       - apps-of-app-net
-  airflow_redis:
-    image: docker.io/bitnami/redis:7.0
-    volumes:
-      - airflow_redis_data:/bitnami
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    networks:
-      - apps-of-app-net
-  airflow_scheduler:
-    image: docker.io/bitnami/airflow-scheduler:2.4.2
-    environment:
-      - REDIS_HOST=airflow_redis
-      - REDIS_PORT_NUMBER=6379
-      - AIRFLOW_DATABASE_HOST=airflow_postgresql
-      - AIRFLOW_DATABASE_PORT_NUMBER=5432
-      - AIRFLOW_DATABASE_NAME=airflow
-      - AIRFLOW_DATABASE_USERNAME=airflow_user
-      - AIRFLOW_DATABASE_PASSWORD=airflow_pw
-      - AIRFLOW_EXECUTOR=CeleryExecutor
-      - AIRFLOW_LOAD_EXAMPLES=no
-      - AIRFLOW_WEBSERVER_HOST=airflow
-    networks:
-      - apps-of-app-net
-  airflow_worker:
-    image: docker.io/bitnami/airflow-worker:2.4.2
-    environment:
-      - REDIS_HOST=airflow_redis
-      - REDIS_PORT_NUMBER=6379
-      - AIRFLOW_DATABASE_HOST=airflow_postgresql
-      - AIRFLOW_DATABASE_PORT_NUMBER=5432
-      - AIRFLOW_DATABASE_NAME=airflow
-      - AIRFLOW_DATABASE_USERNAME=airflow_user
-      - AIRFLOW_DATABASE_PASSWORD=airflow_pw
-      - AIRFLOW_EXECUTOR=CeleryExecutor
-      - AIRFLOW_WEBSERVER_HOST=airflow
-    networks:
-      - apps-of-app-net
-  airflow:
-    image: docker.io/bitnami/airflow:2.4.2
-    environment:
-      - REDIS_HOST=airflow_redis
-      - REDIS_PORT_NUMBER=6379
-      - AIRFLOW_DATABASE_HOST=airflow_postgresql
-      - AIRFLOW_DATABASE_PORT_NUMBER=5432
-      - AIRFLOW_DATABASE_NAME=airflow
-      - AIRFLOW_DATABASE_USERNAME=airflow_user
-      - AIRFLOW_DATABASE_PASSWORD=airflow_pw
-      - AIRFLOW_LOAD_EXAMPLES=no
-      - AIRFLOW_USERNAME=admin
-      - AIRFLOW_PASSWORD=admin
-      - AIRFLOW_EXECUTOR=CeleryExecutor
+  airflow_init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db init && airflow users create \
+        --role Admin \
+        --username admin \
+        --password admin \
+        --email airflow@airflow.com \
+        --firstname airflow \
+        --lastname airflow
+    restart: on-failure
+  airflow_webserver:
+    <<: *airflow-common
+    command: airflow webserver
     ports:
-      - '8080:8080'
+      - "8080:8080"
+    restart: always
+  airflow_scheduler:
+    <<: *airflow-common
+    command: airflow scheduler
+    restart: always
     networks:
       - apps-of-app-net
 volumes:
   airflow_postgresql_data:
-  airflow_redis_data:
 networks:
   apps-of-app-net:
-    name: Tiltfiles-of-app-net
+    name: apps-of-app-net
