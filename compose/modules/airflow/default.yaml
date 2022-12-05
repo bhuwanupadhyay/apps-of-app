@@ -1,6 +1,6 @@
 version: '3.9'
 x-airflow-common: &airflow-common
-  image: sd.k8s/glide-ai:latest
+  image: apps-of-app/airflow:latest
   build:
     context: ./
     dockerfile: Dockerfile
