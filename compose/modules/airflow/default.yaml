@@ -2,8 +2,8 @@ version: '3.9'
 x-airflow-common: &airflow-common
   image: sd.k8s/glide-ai:latest
   build:
-    context: ../../glide-ai/
-    dockerfile: Dockerfile
+    context: ./
+    dockerfile: airflow.dockerfile
   environment:
     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow_user:airflow_pw@airflow_postgresql:5432/airflow
